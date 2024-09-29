@@ -30,7 +30,7 @@ class ProcessImageJob implements ShouldQueue
 
     public function handle()
     {
-
+        try {
             $this->task->update(['status' => 'in_progress', 'progress' => 0]);
 
 //        dd(storage_path('app/private/' . $this->task->image_path));
@@ -54,9 +54,9 @@ class ProcessImageJob implements ShouldQueue
 
 // Удаляем временный файл
             Storage::delete($this->task->image_path);
-//        } catch (\Exception $e) {
-//            $this->task->update(['status' => 'failed']);
-//            \Log::error('Image processing failed: ' . $e->getMessage());
-//        }
+        } catch (\Exception $e) {
+            $this->task->update(['status' => 'failed']);
+            \Log::error('Image processing failed: ' . $e->getMessage());
+        }
     }
 }
