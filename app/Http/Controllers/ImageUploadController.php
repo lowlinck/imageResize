@@ -1,47 +1,43 @@
-
 <?php
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\UploadRequest;
 use App\Models\Task;
 use App\Jobs\ProcessImageJob;
-use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
+use Illuminate\Http\Request;
 
 class ImageUploadController extends Controller
 {
-    public function upload(Request $request)
+    public function upload(UploadRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'images' => 'required|array|max:10',
-            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator->errors());
-        }
+        $validatedData = $request->validated();
 
         $tasks = [];
 
-        foreach ($request->file('images') as $image) {
-            // Сохранение во временное хранилище
-            $path = $image->store('temp');
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                // Сохранение во временное хранилище
+                $path = $image->store('temp');
 
-            // Создание задачи
-            $task = Task::create([
-                'status' => 'pending',
-                'progress' => 0,
-                'image_path' => $path,
-            ]);
+                // Создание задачи
+                $task = Task::create([
+                    'status' => 'pending',
+                    'progress' => 0,
+                    'image_path' => $path,
+                ]);
 
-            // Отправка задания в очередь
-            ProcessImageJob::dispatch($task);
+                // Отправка задания в очередь
+                ProcessImageJob::dispatch($task);
 
-            $tasks[] = $task->id;
+                $tasks[] = $task->id;
+            }
+        } else {
+            return back()->withErrors(['images' => 'No images were uploaded.']);
         }
 
         // Возвращение на страницу с передачей task_ids
-        return redirect()->route('home')->with('task_ids', $tasks);
+        return Inertia::render('Welcome', ['taskIdsFromSession' => $tasks]);
     }
 }
