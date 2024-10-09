@@ -15,7 +15,7 @@ WORKDIR /var/www/html
 # Устанавливаем переменные среды
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/Edmonton
-ENV SUPERVISOR_PHP_COMMAND="/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan serve --host=0.0.0.0 --port=80"
+ENV SUPERVISOR_PHP_COMMAND="/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan serve --host=0.0.0.0 --port=8080"
 ENV SUPERVISOR_PHP_USER="sail"
 
 # Устанавливаем временную зону
