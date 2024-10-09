@@ -16,7 +16,7 @@ WORKDIR /var/www/html
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/Edmonton
 ENV SUPERVISOR_PHP_COMMAND="/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan serve --host=0.0.0.0 --port=${PORT:-8080}"
-ENV SUPERVISOR_PHP_USER="sail"
+ENV SUPERVISOR_PHP_USER="www-data"
 
 # Устанавливаем временную зону
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -70,6 +70,9 @@ RUN composer install --no-dev --optimize-autoloader
 # Установка правильных прав доступа для storage, bootstrap/cache и базы данных
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database \
     && chown -R sail:sail /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
+
+# Обновление прав для supervisord и пользователя
+RUN chown -R www-data:www-data /var/www/html
 
 # Копирование скриптов и конфигураций
 COPY start-container /usr/local/bin/start-container
