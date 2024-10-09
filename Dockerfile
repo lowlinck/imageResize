@@ -15,7 +15,7 @@ WORKDIR /var/www/html
 # Устанавливаем переменные среды
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/Edmonton
-ENV SUPERVISOR_PHP_COMMAND="/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan serve --host=0.0.0.0 --port=8080"
+ENV SUPERVISOR_PHP_COMMAND="/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan serve --host=0.0.0.0 --port=${PORT:-8080}"
 ENV SUPERVISOR_PHP_USER="sail"
 
 # Устанавливаем временную зону
@@ -64,6 +64,9 @@ RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
 # Копирование вашего приложения Laravel в контейнер
 COPY . /var/www/html
 
+# Установка зависимостей Laravel через Composer
+RUN composer install --no-dev --optimize-autoloader
+
 # Установка правильных прав доступа для storage, bootstrap/cache и базы данных
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database \
     && chown -R sail:sail /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
@@ -76,8 +79,8 @@ COPY php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
 # Присвоение прав на выполнение для start-container
 RUN chmod +x /usr/local/bin/start-container
 
-# Открытие порта 80 для TCP
-EXPOSE 80/tcp
+# Открытие порта 8080 для Cloud Run
+EXPOSE 8080/tcp
 
 # Установка точки входа
 ENTRYPOINT ["start-container"]
