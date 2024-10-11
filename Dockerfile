@@ -70,6 +70,15 @@ RUN composer install --no-dev --optimize-autoloader
 # Очистка кэша конфигурации и маршрутов
 RUN php artisan config:clear && php artisan route:clear && php artisan view:clear
 
+# Копирование .env.example в .env, если .env не существует
+RUN if [ ! -f /var/www/html/.env ]; then cp /var/www/html/.env.example /var/www/html/.env; fi
+
+# Генерация ключа приложения Laravel
+RUN php artisan key:generate
+
+# Настройка SQLite, создание файла базы данных, если его нет
+RUN if [ ! -f /var/www/html/database/database.sqlite ]; then touch /var/www/html/database/database.sqlite; fi
+
 # Установка правильных прав доступа для storage, bootstrap/cache и базы данных
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database \
     && chown -R sail:sail /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
