@@ -67,12 +67,12 @@ COPY . /var/www/html
 # Установка зависимостей Laravel через Composer
 RUN composer install --no-dev --optimize-autoloader
 
+# Очистка кэша конфигурации и маршрутов
+RUN php artisan config:clear && php artisan route:clear && php artisan view:clear
+
 # Установка правильных прав доступа для storage, bootstrap/cache и базы данных
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database \
     && chown -R sail:sail /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
-
-# Обновление прав для supervisord и пользователя
-RUN chown -R www-data:www-data /var/www/html
 
 # Копирование скриптов и конфигураций
 COPY start-container /usr/local/bin/start-container
@@ -87,3 +87,6 @@ EXPOSE 8080/tcp
 
 # Установка точки входа
 ENTRYPOINT ["start-container"]
+
+# Команда для запуска сервера Laravel
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
